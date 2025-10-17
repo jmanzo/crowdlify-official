@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../app/constants/prisma"
 }
 
 // Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
@@ -13,9 +14,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/**
+ * ENUMS
+*/
+enum ProjectStatus {
+  DRAFT
+  ACTIVE
+}
+
+enum Platform {
+  KICKSTARTER
+  INDIEGOGO
+}
+
+/**
+ * MODELS
+*/
 model Session {
   id            String    @id
-  shop          String
+  shop          String    @unique
   state         String
   isOnline      Boolean   @default(false)
   scope         String?
@@ -29,4 +46,31 @@ model Session {
   locale        String?
   collaborator  Boolean?  @default(false)
   emailVerified Boolean?  @default(false)
+
+  projects      Project[]
+}
+
+model Project {
+    id              Int             @id @default(autoincrement())
+    shop            String
+    session         Session         @relation(fields: [shop], references: [shop], onDelete: Cascade)
+    name            String
+    status          ProjectStatus   @default(DRAFT)
+    image           String?
+    description     String?
+    createdBy       String?
+    message         String?
+    firmness        String?
+    label           String?
+    question        String?
+    addonsHeading   String?
+    popupStatus     Boolean         @default(false)
+    popupTitle      String?
+    popupContent    String?
+    platform        Platform        @default(KICKSTARTER)
+
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
+
+    @@index([shop])
 }
