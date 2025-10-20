@@ -11,12 +11,17 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
     try {
         const formData = Object.fromEntries(await request.formData());
+        
+        if (formData.action === "delete") {
+            await db.project.delete({ where: { id: Number(params.id) } });
+            return redirect("/app");
+        }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { id, ...formFields } = formData || {};
         const data = {
             ...formFields,
             shop,
-            popupStatus: formFields.popupStatus === "true"
+            popupStatus: Boolean(formFields.popupStatus)
         };
 
         if (isProjectPayload(data)) {
