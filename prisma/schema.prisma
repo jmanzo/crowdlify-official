@@ -45,14 +45,11 @@ model Session {
   locale        String?
   collaborator  Boolean?  @default(false)
   emailVerified Boolean?  @default(false)
-
-  projects      Project[]
 }
 
 model Project {
     id              Int             @id @default(autoincrement())
     shop            String
-    session         Session         @relation(fields: [shop], references: [shop], onDelete: Cascade)
     name            String
     status          ProjectStatus   @default(DRAFT)
     image           String?
@@ -70,6 +67,4 @@ model Project {
 
     createdAt       DateTime @default(now())
     updatedAt       DateTime @updatedAt
-
-    @@index([shop])
 }
