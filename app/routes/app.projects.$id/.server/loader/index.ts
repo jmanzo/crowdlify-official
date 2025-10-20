@@ -5,7 +5,7 @@ import { authenticate } from "../../../../shopify.server";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
-
+  
   if (params.id !== "new") {
     const project = await getProject(Number(params.id));
 

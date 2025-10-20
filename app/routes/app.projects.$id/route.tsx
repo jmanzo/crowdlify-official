@@ -4,8 +4,9 @@ import { useActionData, useLoaderData, useNavigate, useParams, useSubmit } from 
 import { ProjectStatus } from "@prisma/client";
 
 import { loader } from "./.server/loader";
+import { action } from "./.server/action";
 
-export { loader };
+export { loader, action };
 
 const statusOptions = Object.values(ProjectStatus).map(status => ({
     label: status.charAt(0) + status.slice(1).toLowerCase(),
@@ -25,14 +26,20 @@ export default function ProjectForm() {
 
     const submit = useSubmit();
 
-    function handleSave () {
-        const data = { ...formState };
-        console.log('::: data: ', data);
-        // submit(data, { method: "POST" });
+    function handleSave (e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        const formData = new FormData();
+        Object.entries(formState).forEach(([ key, value ]) => {
+            if (key === "createdAt" || key === "updatedAt") return;
+            if (value !== undefined && value !== null) {
+                formData.set(key, String(value));
+            }
+        });
+        submit(formData, { method: "post" });
     }
 
     function handleDelete () {
-        submit({ action: "delete" }, { method: "POST" });
+        submit({ action: "delete" }, { method: "post" });
     }
 
     function handleReset () {
@@ -68,7 +75,7 @@ export default function ProjectForm() {
                         Projects
                     </s-link>
                     
-                    {('id' in initialFormState) && <s-button slot="secondary-actions" onClick={handleDelete}>Delete</s-button>}
+                    {('id' in initialFormState) && <s-button slot="secondary-actions" type="button" onClick={handleDelete}>Delete</s-button>}
                     
                     <s-section heading="Details">
                         <s-stack gap="base">
@@ -94,6 +101,7 @@ export default function ProjectForm() {
 
                             <s-text-area
                                 label="Description"
+                                name="description"
                                 value={formState?.description || ''}
                                 rows={3}
                                 onInput={(e) => setFormState({...formState, description: e.currentTarget.value})}
@@ -105,6 +113,7 @@ export default function ProjectForm() {
                         <s-stack gap="base">
                             <s-text-area
                                 label="Message"
+                                name="message"
                                 value={formState.message || ''}
                                 rows={3}
                                 onInput={(e) => setFormState({...formState, message: e.currentTarget.value})}
@@ -156,6 +165,8 @@ export default function ProjectForm() {
                         <s-section heading="Status">
                             <s-stack gap="base">
                                 <s-select
+                                    label="Status"
+                                    labelAccessibilityVisibility="exclusive"
                                     error={errors.status}
                                     name="status"
                                     value={formState.status}
