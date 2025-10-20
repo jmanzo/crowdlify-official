@@ -160,6 +160,36 @@ export default function ProjectForm() {
                             />
                         </s-stack>
                     </s-section>
+                    
+                    <s-section heading="Popup">
+                        <s-stack gap="base">
+                            <s-switch
+                                label="Enable Popup"
+                                details="This will display a popup before proceeding to checkout."
+                                checked={formState?.popupStatus ? true : undefined}
+                                error={errors.popupStatus}
+                                name="popupStatus"
+                                value="true"
+                                onChange={(e) => setFormState({ ...formState ,popupStatus: Boolean(e.currentTarget.checked) })}
+                            />
+
+                            <s-text-field
+                                label="Title"
+                                error={errors.popupTitle}
+                                name="popupTitle"
+                                value={formState.popupTitle || ""}
+                                onInput={(e) => setFormState({ ...formState, popupTitle: e.currentTarget.value })}
+                            />
+
+                            <s-text-area
+                                label="Content"
+                                name="popupContent"
+                                value={formState.popupContent || ''}
+                                rows={3}
+                                onInput={(e) => setFormState({...formState, popupContent: e.currentTarget.value})}
+                            />
+                        </s-stack>
+                    </s-section>
 
                     <s-box slot="aside">
                         <s-section heading="Status">

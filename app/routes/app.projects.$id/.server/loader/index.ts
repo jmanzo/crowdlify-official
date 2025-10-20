@@ -23,7 +23,10 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
       firmness: "🎨 Set your variant",
       label: "Color",
       question: "Select your color for this project",
-      status: "DRAFT"
+      status: "DRAFT",
+      popupStatus: false,
+      popupTitle: "Pop-up Title",
+      popupContent: "Pop-up Content",
     }
   };
 };
