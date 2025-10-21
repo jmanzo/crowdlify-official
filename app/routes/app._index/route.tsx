@@ -24,9 +24,9 @@ export default function Index() {
         <s-stack gap="base">
           <s-table>
             <s-table-header-row>
-              <s-table-header>Name</s-table-header>
-              <s-table-header>Status</s-table-header>
-              <s-table-header>Created</s-table-header>
+              <s-table-header listSlot="primary">Name</s-table-header>
+              <s-table-header listSlot="primary">Status</s-table-header>
+              <s-table-header listSlot="primary">Created</s-table-header>
             </s-table-header-row>
             <s-table-body>
               {
