@@ -107,6 +107,15 @@ export default function ProjectForm() {
                                 rows={3}
                                 onInput={(e) => setFormState({...formState, description: e.currentTarget.value})}
                             />
+
+                            <s-drop-zone
+                                label="Upload CSV File"
+                                accessibilityLabel="Upload CSV files using drag and drop or file selector"
+                                accept=".csv"
+                                error={errors.csvFile}
+                                name="csvFile"
+                                onInput={(e) => console.log(e.currentTarget.value)}
+                            />
                         </s-stack>
                     </s-section>
 
