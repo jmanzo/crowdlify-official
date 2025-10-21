@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { HeadersFunction, useActionData, useLoaderData, useNavigate, useParams, useSubmit } from "react-router";
-
+import { HeadersFunction, useActionData, useLoaderData, useNavigate, useNavigation, useParams, useSubmit } from "react-router";
+import { boundary } from "@shopify/shopify-app-react-router/server";
 import { ProjectStatus } from "@prisma/client";
 
+import { CSVUpload } from "./components";
 import { loader } from "./.server/loader";
 import { action } from "./.server/action";
-import { boundary } from "@shopify/shopify-app-react-router/server";
 
 export { loader, action };
 
@@ -21,11 +21,16 @@ export default function ProjectForm() {
     const { payload: project } = useLoaderData<typeof loader>();
     const [ initialFormState, setInitialFormState ] = useState(project);
     const [ formState, setFormState ] = useState(project);
+    const [rawCsv, setRawCsv] = useState<string>("");
     const errors = useActionData()?.errors || {};
-    // const isSaving = useNavigation().state === "submitting";
+    const isSaving = useNavigation().state === "submitting";
     const isDirty = JSON.stringify(formState) !== JSON.stringify(initialFormState);
 
     const submit = useSubmit();
+
+    function handleCsvDataChange (data: string[][], raw: string) {
+        setRawCsv(raw);
+    }
 
     function handleSave (e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -36,6 +41,11 @@ export default function ProjectForm() {
                 formData.set(key, String(value));
             }
         });
+        // Process your CSV data here
+        if (rawCsv) {
+            formData.set('csvData', rawCsv);
+        }
+        
         submit(formData, { method: "post" });
     }
 
@@ -108,13 +118,9 @@ export default function ProjectForm() {
                                 onInput={(e) => setFormState({...formState, description: e.currentTarget.value})}
                             />
 
-                            <s-drop-zone
-                                label="Upload CSV File"
-                                accessibilityLabel="Upload CSV files using drag and drop or file selector"
-                                accept=".csv"
-                                error={errors.csvFile}
-                                name="csvFile"
-                                onInput={(e) => console.log(e.currentTarget.value)}
+                            <CSVUpload
+                                onCsvDataChange={handleCsvDataChange}
+                                isSubmitting={isSaving}
                             />
                         </s-stack>
                     </s-section>

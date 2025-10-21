@@ -17,7 +17,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             return redirect("/app");
         }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { id, ...formFields } = formData || {};
+        const { id, csvData, ...formFields } = formData || {};
         const data = {
             ...formFields,
             shop,
