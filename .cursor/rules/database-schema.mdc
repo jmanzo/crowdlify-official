@@ -1,0 +1,11 @@
+---
+description: "Provides an overview of the Prisma database schema."
+---
+# Database Schema Overview
+
+The application uses Prisma with a PostgreSQL database. The schema is defined in `[prisma/schema.prisma](mdc:prisma/schema.prisma)`.
+
+## Primary Key Strategy
+
+-   All models use an auto-incrementing `Int` as their primary key (`id`), with the exception of the `Session` model.
+-   The `Session` model's `id` is a `String` that is managed by the Shopify App Remix library.

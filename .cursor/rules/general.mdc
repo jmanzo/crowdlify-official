@@ -1,0 +1,139 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+## Project Overview
+
+Crowdlify is a Shopify app built with Remix framework. This is a full-stack TypeScript application that provides both frontend and backend functionality as an embedded Shopify app with write_products permissions.
+
+## Development Commands
+
+### Essential Commands
+```bash
+# Install dependencies
+pnpm install
+
+# Start development server (includes Prisma setup and Shopify CLI)
+pnpm run dev
+
+# Build for production
+pnpm run build
+
+# Start production server
+pnpm start
+
+# Deploy to Shopify
+pnpm run deploy
+```
+
+### Database Commands
+```bash
+# Generate Prisma client
+pnpm run prisma generate
+
+# Run database migrations
+pnpm run prisma migrate deploy
+
+# Combined setup (generate + migrate)
+pnpm run setup
+
+# View database in Prisma Studio
+pnpm run prisma studio
+```
+
+### Development Tools
+```bash
+# Lint code
+pnpm run lint
+
+# Generate GraphQL types
+pnpm run graphql-codegen
+
+# Shopify CLI commands
+pnpm run config:link    # Link app config
+pnpm run config:use     # Switch app config
+pnpm run env            # View environment variables
+pnpm run generate       # Generate Shopify extensions
+```
+
+## Architecture Overview
+
+### Application Structure
+- **Framework**: Remix (React-based full-stack framework)
+- **Database**: PostgreSQL with Prisma ORM
+- **UI**: Shopify Polaris design system with App Bridge
+- **Authentication**: Shopify OAuth with session storage in database
+- **API**: Shopify Admin GraphQL API (version 2025-07)
+
+### Key Directories
+```
+app/
+├── routes/                 # Remix file-based routing
+│   ├── app.tsx            # Main app layout with AppProvider
+│   ├── app._index.tsx     # Home page with product demo
+│   ├── app.additional.tsx # Additional page example
+│   ├── auth.$.tsx         # OAuth callback handler
+│   └── webhooks/          # Webhook handlers
+├── shopify.server.ts      # Shopify app configuration
+├── db.server.ts           # Prisma database client
+└── root.tsx              # App root component
+```
+
+### Database Schema
+- **Sessions table**: Stores Shopify app sessions with user/shop data
+- **Provider**: PostgreSQL (configured for production use)
+- **ORM**: Prisma with migrations
+
+## Development Workflow
+
+### Getting Started
+1. Ensure you have a Shopify Partner account and development store
+2. Set up environment variables (DATABASE_URL, SHOPIFY_API_KEY, etc.)
+3. Run `pnpm install` to install dependencies
+4. Run `pnpm run dev` to start development (automatically handles database setup)
+5. The Shopify CLI will open a tunnel and provide the app URL
+
+### Adding New Routes
+- Create new files in `app/routes/` following Remix conventions
+- Use `app.*.tsx` pattern for authenticated app pages
+- Add navigation links to the NavMenu in `app/routes/app.tsx`
+
+### Database Changes
+- Modify `prisma/schema.prisma`
+- Create migration: `pnpm run prisma migrate dev --name description`
+- The dev command automatically runs migrations
+
+### GraphQL Development
+- All Admin API queries use the authenticated `admin.graphql()` method
+- GraphQL configuration is in `.graphqlrc.ts`
+- API version is centrally configured in `shopify.server.ts`
+
+### Environment Configuration
+Development uses Shopify CLI which provides:
+- Automatic environment variable injection
+- Tunnel management for local development
+- Hot module reloading via Vite
+
+### Docker Deployment
+- Dockerfile provided for containerized deployment
+- Use `pnpm run docker-start` as container entry point
+- Automatically runs setup and starts the server
+
+## Important Implementation Notes
+
+### Authentication Flow
+- All app routes under `/app/*` require Shopify authentication
+- Sessions are persisted in PostgreSQL via Prisma
+- OAuth redirects are handled automatically by Shopify App Remix
+
+### GraphQL Best Practices
+- Use the centrally configured API version (October25)
+- Queries should be tagged with `#graphql` for editor support
+- Response data should be typed and validated
+
+### Performance Optimizations
+- Vite handles build optimization
+- Assets inline limit is set to 0 for better caching
+- Optimized dependencies include Polaris and App Bridge
