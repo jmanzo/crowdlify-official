@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { useActionData, useLoaderData, useNavigate, useParams, useSubmit } from "react-router";
+import { HeadersFunction, useActionData, useLoaderData, useNavigate, useParams, useSubmit } from "react-router";
 
 import { ProjectStatus } from "@prisma/client";
 
 import { loader } from "./.server/loader";
 import { action } from "./.server/action";
+import { boundary } from "@shopify/shopify-app-react-router/server";
 
 export { loader, action };
 
@@ -223,3 +224,7 @@ export default function ProjectForm() {
 function isProjectStatus (key: string): key is ProjectStatus {
     return Object.values(ProjectStatus).some(status => status === key);
 }
+
+export const headers: HeadersFunction = (headersArgs) => {
+    return boundary.headers(headersArgs);
+};
