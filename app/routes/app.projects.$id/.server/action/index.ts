@@ -4,6 +4,7 @@ import { authenticate } from 'app/shopify.server';
 import db from 'app/db.server';
 import { handleApiError } from "app/utils/handleApiErrors";
 import { isProjectPayload } from "app/types/predicates/isProjectPayload";
+import { upload } from "app/models/CSVUpload.server";
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
     const { session, redirect } = await authenticate.admin(request);
@@ -30,6 +31,10 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
                 : await db.project.update({
                     where: { id: Number(params.id) }, data
                 });
+            
+            if (csvData) {
+                await upload(project.id, csvData);
+            }
         
             return redirect(`/app/projects/${project.id}`);
         }
