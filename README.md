@@ -58,6 +58,16 @@ This app requires the following environment variables:
 - `DATABASE_URL`: PostgreSQL database connection string
 - `REDIS_URL`: Redis connection string (defaults to `redis://localhost:6379` for local development)
 
+#### Background Worker
+
+For CSV processing, you'll need to run the background worker in a separate terminal:
+
+```shell
+pnpm run worker
+```
+
+This worker processes CSV upload chunks asynchronously using BullMQ and Redis.
+
 ### Authenticating and querying data
 
 To authenticate and query data you can use the `shopify` const that is exported from `/app/shopify.server.js`:
