@@ -21,6 +21,11 @@ enum ProjectStatus {
   ACTIVE
 }
 
+enum SurveyStatus {
+  COLLECTED_PAYMENT
+  ERRORED_PAYMENT
+}
+
 enum Platform {
   KICKSTARTER
   INDIEGOGO
@@ -52,6 +57,8 @@ model Session {
   locale        String?
   collaborator  Boolean?  @default(false)
   emailVerified Boolean?  @default(false)
+
+  backers       Backer[]
 }
 
 model Project {
@@ -73,9 +80,82 @@ model Project {
     platform        Platform        @default(KICKSTARTER)
 
     uploads         CsvUpload[]
+    products        Product[]
+    pledges         Pledge[]
+    surveys         Survey[]
 
     createdAt       DateTime @default(now())
     updatedAt       DateTime @updatedAt
+}
+
+model Backer {
+  id        Int      @id @default(autoincrement())
+  shop      String
+  session   Session  @relation(fields: [shop], references: [shop], onDelete: Cascade)
+  email     String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  surveys   Survey[]
+
+  @@unique([shop, email])
+  @@index([shop])
+}
+
+model Product {
+  id          Int         @id @default(autoincrement())
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   Int
+  handle      String?
+  name        String
+  inventories Inventory[]
+
+  @@unique([projectId, name])
+  @@index([projectId])
+}
+
+model Pledge {
+  id        Int      @id @default(autoincrement())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId Int
+  pledgeId  String   // From CSV (e.g., "Reward ID" or "Perk ID")
+  name      String
+  surveys   Survey[]
+
+  @@unique([projectId, pledgeId])
+  @@index([projectId])
+}
+
+model Survey {
+  id           Int          @id @default(autoincrement())
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId    Int
+  backer       Backer       @relation(fields: [backerId], references: [id], onDelete: Cascade)
+  backerId     Int
+  pledge       Pledge       @relation(fields: [pledgeId], references: [id])
+  pledgeId     Int
+  bonusSupport Float        @default(0)
+  price        Float
+  country      String
+  status       SurveyStatus
+  inventories  Inventory[]
+  purchased    Boolean      @default(false)
+  lastSent     Int?
+
+  @@unique([projectId, backerId])
+  @@index([projectId])
+  @@index([backerId])
+}
+
+model Inventory {
+  id        Int     @id @default(autoincrement())
+  survey    Survey  @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  surveyId  Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+  qty       Int
+
+  @@unique([surveyId, productId])
 }
 
 model CsvUpload {
