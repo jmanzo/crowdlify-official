@@ -23,6 +23,11 @@ Before you begin, you'll need the following:
 ```shell
 npm install -g @shopify/cli@latest
 ```
+5. **Redis**: Required for background job processing. Install locally:
+```shell
+brew install redis
+brew services start redis
+```
 
 ### Setup
 
@@ -32,6 +37,13 @@ shopify app init --template=https://github.com/Shopify/shopify-app-template-reac
 
 ### Local Development
 
+Ensure Redis is running:
+```shell
+redis-cli ping
+# Should return PONG
+```
+
+Then start the development server:
 ```shell
 shopify app dev
 ```
@@ -39,6 +51,12 @@ shopify app dev
 Press P to open the URL to your app. Once you click install, you can start development.
 
 Local development is powered by [the Shopify CLI](https://shopify.dev/docs/apps/tools/cli). It logs into your partners account, connects to an app, provides environment variables, updates remote config, creates a tunnel and provides commands to generate extensions.
+
+#### Environment Variables
+
+This app requires the following environment variables:
+- `DATABASE_URL`: PostgreSQL database connection string
+- `REDIS_URL`: Redis connection string (defaults to `redis://localhost:6379` for local development)
 
 ### Authenticating and querying data
 
