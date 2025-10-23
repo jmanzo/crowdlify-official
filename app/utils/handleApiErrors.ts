@@ -13,6 +13,16 @@ export const handleApiError = ({ status = 400, errors }: HandleApiErrorParams) =
             type: 'error',
             message: errors.message,
         }];
+    } else if (typeof errors === "object" && errors !== null && !Array.isArray(errors)) {
+        console.log('HandleApiError type: object');
+
+        errorsArray = Object.entries(errors).map(([field, message]) => ({
+            __typename: 'ApiError',
+            id: crypto.randomUUID(),
+            type: 'validation',
+            message,
+            field  // Add field to identify which form field has the error
+        }));
     } else if (errors instanceof Response) {
         console.log('HandleApiError type: Response');
 
@@ -64,13 +74,14 @@ export type HandleApiErrorParams = {
 
 export type ApiError = ApiErrorBase & OtherApiError;
 
-type ApiErrorBase = {
+export type ApiErrorBase = {
     __typename: 'ApiError';
     id: string;
     message: string;
+    field?: string;
 };
   
 type OtherApiError = {
     // 👇🏻 you can expand these codes to react however you want in the client
-    type: 'graphql' | 'prisma' | 'error' | 'unknown';
+    type: 'graphql' | 'prisma' | 'error' | 'unknown' | "validation";
 };

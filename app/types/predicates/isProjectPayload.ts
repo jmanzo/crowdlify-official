@@ -6,7 +6,7 @@ export const isProjectPayload = (data: unknown): data is ProjectPayload => {
         'status' in data;
 }
 
-type ProjectPayload = {
+export type ProjectPayload = {
     popupStatus?: boolean;
     id?: number;
 } & Omit<Project, 'platform' | 'createdAt' | 'updatedAt'>
