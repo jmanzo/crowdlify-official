@@ -1,0 +1,126 @@
+---
+globs: *.ts,*.tsx,*.js,*.jsx
+description: Performance optimization patterns and best practices
+---
+
+# Performance Optimization Patterns
+
+## Code Performance Standards
+Focus on performance optimization throughout the codebase:
+
+### Database Query Optimization
+```typescript
+// ✅ Good: Optimized queries with select
+const projects = await prisma.project.findMany({
+    where: { shop },
+    select: {
+        id: true,
+        name: true,
+        status: true,
+        createdAt: true
+    }
+});
+
+// ❌ Bad: Fetching unnecessary data
+const projects = await prisma.project.findMany({
+    where: { shop }
+    // This fetches all fields including large text fields
+});
+```
+
+### Efficient Data Processing
+```typescript
+// ✅ Good: Efficient CSV processing
+export const parseCsvText = (rawText: FormDataEntryValue) => {
+    try {
+        if (typeof rawText === "string") {
+            const lines = rawText.split('\n').filter(line => line.trim() !== '');
+            // Process line by line instead of loading everything into memory
+        }
+    } catch (error) {
+        throw new Error(`Failed to parse CSV: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+}
+```
+
+### React Performance Patterns
+```typescript
+// ✅ Good: Proper key usage for lists
+{projects?.map((project) => (
+    <s-table-row key={project.id}>
+        <s-table-cell>
+            <s-link href={`/app/projects/${project.id}`}>
+                {project.name}
+            </s-link>
+        </s-table-cell>
+    </s-table-row>
+))}
+
+// ✅ Good: Efficient state updates
+function handleInput(e: React.ChangeEvent<HTMLInputElement>) {
+    setFormState(prev => ({ 
+        ...prev, 
+        [e.target.name]: e.target.value 
+    }));
+}
+```
+
+### Memory Management
+```typescript
+// ✅ Good: Proper cleanup in useEffect
+useEffect(() => {
+    if (isDirty) {
+        window.shopify.saveBar.show("project-form");
+    } else {
+        window.shopify.saveBar.hide("project-form");
+    }
+    
+    return () => {
+        window.shopify.saveBar.hide("project-form");
+    };
+}, [isDirty]);
+```
+
+### Error Handling Performance
+```typescript
+// ✅ Good: Efficient error handling
+export const handleApiError = ({ status = 400, errors }: HandleApiErrorParams) => {
+    let errorsArray: ApiError[] = [];
+
+    if (errors instanceof Error) {
+        errorsArray = [{
+            __typename: 'ApiError',
+            id: crypto.randomUUID(),
+            type: 'error',
+            message: errors.message,
+        }];
+    }
+    // Handle other error types efficiently
+    
+    return { errors: errorsArray, payload: null, status };
+}
+```
+
+## Bundle Optimization
+- Use proper tree shaking with named exports
+- Implement code splitting for large components
+- Optimize imports to avoid unused code
+- Use dynamic imports for heavy libraries
+
+## Database Performance
+- Use proper indexing strategies
+- Implement efficient pagination
+- Use transactions for batch operations
+- Avoid N+1 queries with proper includes
+
+## Caching Strategies
+- Implement proper HTTP caching headers
+- Use React Router's built-in caching
+- Cache frequently accessed data
+- Implement proper cache invalidation
+
+## Monitoring and Profiling
+- Use proper logging for performance monitoring
+- Implement performance metrics collection
+- Monitor database query performance
+- Track bundle size and loading times

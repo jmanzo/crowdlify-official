@@ -1,0 +1,121 @@
+---
+globs: prisma/schema.prisma,app/db.server.ts
+description: Database schema and Prisma ORM patterns
+---
+
+# Database & Prisma Patterns
+
+## Schema Organization
+The Prisma schema follows a clear structure with enums, models, and proper relationships:
+
+### Enum Definitions
+```prisma
+enum ProjectStatus {
+  DRAFT
+  ACTIVE
+}
+
+enum UploadStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+```
+
+### Model Relationships
+```prisma
+model Project {
+    id              Int             @id @default(autoincrement())
+    shop            String
+    name            String
+    status          ProjectStatus   @default(DRAFT)
+    
+    uploads         CsvUpload[]
+    products        Product[]
+    pledges         Pledge[]
+    surveys         Survey[]
+    
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
+}
+```
+
+## Database Patterns
+
+### Multi-Tenancy
+- Use `shop` field for tenant isolation
+- Always filter by shop in queries
+- Implement proper cascade deletes
+
+### Indexing Strategy
+```prisma
+model Backer {
+  @@unique([shop, email])  // Business constraint
+  @@index([shop])          // Performance index
+}
+```
+
+### Relationship Patterns
+- Use proper foreign key relationships
+- Implement cascade deletes where appropriate
+- Use unique constraints for business logic
+- Add indexes for performance
+
+## Prisma Client Usage
+
+### Singleton Pattern
+```typescript
+// ✅ Good: Singleton Prisma client
+// app/db.server.ts
+if (process.env.NODE_ENV !== "production") {
+  if (!global.prismaGlobal) {
+    global.prismaGlobal = new PrismaClient();
+  }
+}
+
+const prisma = global.prismaGlobal ?? new PrismaClient();
+export default prisma;
+```
+
+### Query Patterns
+```typescript
+// ✅ Good: Proper query structure
+const project = await prisma.project.findUnique({
+    where: { id },
+    include: {
+        uploads: true,
+        products: true
+    }
+});
+
+// ✅ Good: Optimized select
+const projects = await prisma.project.findMany({
+    where: { shop },
+    select: {
+        id: true,
+        name: true,
+        status: true,
+        createdAt: true
+    }
+});
+```
+
+## Migration Patterns
+- Use descriptive migration names
+- Test migrations in development
+- Use proper rollback strategies
+- Document breaking changes
+
+## Data Validation
+- Use Prisma's built-in validation
+- Implement additional business rule validation
+- Use proper error handling for constraint violations
+- Validate data before database operations
+
+## Performance Considerations
+- Use proper database indexes
+- Implement efficient queries
+- Use transactions for complex operations
+- Consider query optimization for large datasets
+- Use proper pagination strategies

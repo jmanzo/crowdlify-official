@@ -1,0 +1,63 @@
+---
+globs: *.ts,*.tsx
+description: TypeScript coding standards and best practices
+---
+
+# TypeScript Standards
+
+## Type Safety Rules
+- **NEVER use `any` assertions** - always find alternative approaches
+- Use proper type guards and predicates instead of type assertions
+- Define clear interfaces for all data structures
+- Use TypeScript predicates for runtime type checking (see [isProjectPayload](mdc:app/types/predicates/isProjectPayload.ts))
+
+## Import/Export Patterns
+```typescript
+// ✅ Good: Named exports for utilities
+export const validateProjectData = async (data: ProjectPayload) => { ... }
+
+// ✅ Good: Barrel exports for clean imports
+export * from "./EmptyState";
+export * from "./ProjectsTable";
+
+// ✅ Good: Absolute imports with app prefix
+import { authenticate } from 'app/shopify.server';
+import db from 'app/db.server';
+```
+
+## Error Handling Standards
+- Use structured error objects with consistent shape
+- Implement proper error boundaries for React components
+- Always handle async operations with try/catch
+- Return meaningful error messages for user feedback
+
+## Function Patterns
+```typescript
+// ✅ Good: Async functions with proper error handling
+export const upload = async (projectId: number, rawData: FormDataEntryValue) => {
+    try {
+        // Implementation
+        return { success: true, data };
+    } catch (error) {
+        console.error("Failed to process CSV upload:", error);
+        return { success: false, error: "Internal processing error" };
+    }
+}
+
+// ✅ Good: Type guards for runtime validation
+function isProjectStatus(key: string): key is ProjectStatus {
+    return Object.values(ProjectStatus).some(status => status === key);
+}
+```
+
+## Component Patterns
+- Use proper TypeScript interfaces for props
+- Implement proper event handler types
+- Use React Router hooks with proper typing
+- Prefer functional components with hooks
+
+## Database Patterns
+- Use Prisma generated types for database models
+- Implement proper transaction handling
+- Use proper error handling for database operations
+- Follow the singleton pattern for Prisma client

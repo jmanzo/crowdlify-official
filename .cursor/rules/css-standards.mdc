@@ -1,0 +1,85 @@
+---
+globs: *.css,*.module.css
+description: CSS and styling conventions using BEM methodology
+---
+
+# CSS & Styling Standards
+
+## BEM Methodology
+All CSS must follow the **BEM (Block Element Modifier)** pattern:
+
+```css
+/* ✅ Good: BEM Pattern */
+.index {
+  /* Block styles */
+}
+
+.index__content {
+  /* Element styles */
+}
+
+.index__content--highlighted {
+  /* Modifier styles */
+}
+
+/* ❌ Bad: Non-BEM patterns */
+.container .header .title {
+  /* Avoid nested selectors */
+}
+```
+
+## CSS Module Patterns
+- Use CSS modules for component-specific styles
+- Follow the naming convention: `[component].module.css`
+- Export class names as camelCase from CSS modules
+
+## Styling Hierarchy
+1. **Shopify Polaris**: Use built-in Polaris components and design tokens
+2. **Custom Components**: Use CSS modules with BEM methodology
+3. **Global Styles**: Minimal global styles, prefer component-scoped styles
+
+## Responsive Design
+- Use mobile-first approach
+- Implement proper breakpoints
+- Test on various screen sizes
+
+## Performance Considerations
+- Minimize CSS bundle size
+- Use efficient selectors
+- Avoid deep nesting (max 3 levels)
+- Use CSS custom properties for theming
+
+## Example Implementation
+```css
+/* styles.module.css */
+.projectCard {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: var(--p-color-bg-surface);
+}
+
+.projectCard__header {
+  margin-bottom: 0.5rem;
+}
+
+.projectCard__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.projectCard__title--featured {
+  color: var(--p-color-text-brand);
+}
+
+.projectCard__content {
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .projectCard {
+    padding: 0.75rem;
+  }
+}
+```

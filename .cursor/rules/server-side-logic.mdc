@@ -1,0 +1,127 @@
+---
+globs: app/models/**/*.ts,app/helpers/**/*.ts,app/utils/**/*.ts
+description: Server-side business logic and utility patterns
+---
+
+# Server-Side Logic Patterns
+
+## Model Organization
+Server-side models should be organized in the `models/` directory with `.server.ts` suffix:
+
+```typescript
+// ✅ Good: Model structure
+// app/models/Project.server.ts
+export async function getProject(id: number) {
+    const project = await prisma.project.findUnique({
+        where: { id }
+    });
+    return project;
+}
+
+export async function getProjects(shop: string) {
+    return await prisma.project.findMany({
+        where: { shop },
+        select: {
+            id: true,
+            name: true,
+            status: true, 
+            createdAt: true
+        }
+    });
+}
+```
+
+## Helper Functions
+Place utility functions in the `helpers/` directory:
+
+```typescript
+// ✅ Good: Helper function pattern
+// app/helpers/validateProjectData.ts
+export const validateProjectData = async (data: ProjectPayload) => {
+    const errors: Record<string, string> = {};
+    
+    if (!data.name || data.name === "") {
+        errors.name = "Name is required";
+    }
+    
+    // Validation logic
+    return Object.keys(errors).length ? errors : undefined;
+}
+```
+
+## Error Handling Patterns
+Use consistent error handling across server-side functions:
+
+```typescript
+// ✅ Good: Error handling pattern
+export const upload = async (projectId: number, rawData: FormDataEntryValue) => {
+    try {
+        // Business logic
+        return {
+            success: true,
+            data: result
+        };
+    } catch (error) {
+        console.error("Operation failed:", error);
+        return {
+            success: false,
+            error: "Internal processing error"
+        };
+    }
+}
+```
+
+## Database Patterns
+
+### Prisma Usage
+- Always use the singleton client from [db.server.ts](mdc:app/db.server.ts)
+- Use proper error handling for database operations
+- Implement transactions for complex operations
+- Use proper select statements to limit data transfer
+
+### Query Optimization
+```typescript
+// ✅ Good: Optimized queries
+const projects = await prisma.project.findMany({
+    where: { shop },
+    select: {
+        id: true,
+        name: true,
+        status: true,
+        createdAt: true
+    }
+});
+```
+
+## Validation Patterns
+- Implement server-side validation for all inputs
+- Use TypeScript predicates for type checking
+- Return structured error objects
+- Validate business rules, not just data types
+
+## Utility Functions
+Place shared utilities in the `utils/` directory:
+
+```typescript
+// ✅ Good: Utility function
+// app/utils/mapKeys.ts
+export const mapKeys = (headers: string[]) => {
+    const keys: KeysRecord = { products: [] };
+    
+    for (const header of headers) {
+        if (header === "Reward ID" || header === "Perk ID") {
+            keys.rewardId = headers.indexOf(header);
+        }
+        // Mapping logic
+    }
+    
+    return keys;
+}
+```
+
+## Performance Considerations
+- Use proper database indexing
+- Implement efficient data processing
+- Avoid N+1 queries
+- Use proper pagination for large datasets
+- Cache frequently accessed data when appropriate

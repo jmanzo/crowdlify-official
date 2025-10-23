@@ -1,0 +1,100 @@
+---
+globs: app/routes/**/*.tsx,app/routes/**/*.ts
+description: Remix routing patterns and conventions
+---
+
+# Remix Routing Patterns
+
+## File-Based Routing Structure
+```
+app/routes/
+├── app.tsx                    # Main app layout with authentication
+├── app._index/               # Dashboard route
+│   ├── route.tsx            # Main component
+│   ├── .server/             # Server-side logic
+│   │   └── loader/         # Data loading
+│   └── components/         # Route-specific components
+├── app.projects.$id/        # Dynamic project routes
+│   ├── route.tsx
+│   ├── .server/
+│   │   ├── loader/         # Data fetching
+│   │   └── action/        # Form submissions
+│   └── components/
+├── auth.login/              # Authentication routes
+└── webhooks.*.tsx          # Webhook handlers
+```
+
+## Route Conventions
+
+### Authentication Routes
+- **`/app/*`**: All routes require Shopify authentication
+- Use `authenticate.admin(request)` in loaders and actions
+- Handle authentication errors gracefully
+
+### Dynamic Routes
+- Use `$` prefix for dynamic segments (e.g., `$id`)
+- Access params via `useParams()` hook
+- Validate route parameters before use
+
+### Server-Side Logic Separation
+```typescript
+// ✅ Good: Separate server logic
+// app/routes/app.projects.$id/.server/loader/index.ts
+export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+  await authenticate.admin(request);
+  // Loader logic
+};
+
+// app/routes/app.projects.$id/.server/action/index.ts
+export const action = async ({ request, params }: ActionFunctionArgs) => {
+  const { session, redirect } = await authenticate.admin(request);
+  // Action logic
+};
+```
+
+## Component Patterns
+
+### Route Components
+- Export `loader` and `action` functions
+- Use proper TypeScript interfaces
+- Implement error boundaries
+- Handle loading states
+
+### Form Handling
+```typescript
+// ✅ Good: Form submission pattern
+const submit = useSubmit();
+const isSaving = useNavigation().state === "submitting";
+
+function handleSave(e: React.FormEvent<HTMLFormElement>) {
+  e.preventDefault();
+  const formData = new FormData();
+  // Build form data
+  submit(formData, { method: "post" });
+}
+```
+
+### Data Loading
+```typescript
+// ✅ Good: Loader pattern
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const { session } = await authenticate.admin(request);
+  const data = await getData(session.shop);
+  return { payload: data };
+};
+
+// Component usage
+const { payload } = useLoaderData<typeof loader>();
+```
+
+## Error Handling
+- Use `boundary.headers()` for proper error responses
+- Implement proper error boundaries
+- Handle both client and server errors
+- Provide meaningful error messages
+
+## Performance Patterns
+- Use proper caching strategies
+- Implement efficient data loading
+- Avoid unnecessary re-renders
+- Use React Router's built-in optimizations

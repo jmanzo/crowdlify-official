@@ -1,0 +1,169 @@
+---
+globs: app/shopify.server.ts,app/routes/webhooks.*.tsx,app/routes/auth.*.tsx
+description: Shopify-specific patterns and authentication
+---
+
+# Shopify Integration Patterns
+
+## Shopify App Configuration
+The app uses Shopify's App Bridge and Polaris for embedded app functionality:
+
+```typescript
+// ✅ Good: Shopify app setup
+// app/shopify.server.ts
+const shopify = shopifyApp({
+  apiKey: process.env.SHOPIFY_API_KEY,
+  apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
+  apiVersion: ApiVersion.October25,
+  scopes: process.env.SCOPES?.split(","),
+  appUrl: process.env.SHOPIFY_APP_URL || "",
+  authPathPrefix: "/auth",
+  sessionStorage: new PrismaSessionStorage(prisma),
+  distribution: AppDistribution.AppStore,
+});
+```
+
+## Authentication Patterns
+All authenticated routes must use proper Shopify authentication:
+
+```typescript
+// ✅ Good: Authentication in loaders
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const { session } = await authenticate.admin(request);
+  // Use session.shop for multi-tenant data
+  return { data: await getData(session.shop) };
+};
+
+// ✅ Good: Authentication in actions
+export const action = async ({ request, params }: ActionFunctionArgs) => {
+  const { session, redirect } = await authenticate.admin(request);
+  const { shop } = session;
+  // Action logic with shop context
+};
+```
+
+## Webhook Handling
+Implement proper webhook authentication and processing:
+
+```typescript
+// ✅ Good: Webhook pattern
+// app/routes/webhooks.app.uninstalled.tsx
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const { shop, session, topic } = await authenticate.webhook(request);
+  
+  console.log(`Received ${topic} webhook for ${shop}`);
+  
+  if (session) {
+    await db.session.deleteMany({ where: { shop } });
+  }
+  
+  return new Response();
+};
+```
+
+## App Bridge Integration
+Use Shopify's App Bridge for embedded app functionality:
+
+```typescript
+// ✅ Good: App Bridge setup
+// app/routes/app.tsx
+export default function App() {
+  const { apiKey } = useLoaderData<typeof loader>();
+
+  return (
+    <AppProvider embedded apiKey={apiKey}>
+      <s-app-nav>
+        <s-link href="/app">Dashboard</s-link>
+      </s-app-nav>
+      <Outlet />
+    </AppProvider>
+  );
+}
+```
+
+## Polaris Component Usage
+Use Shopify's Polaris design system components:
+
+```typescript
+// ✅ Good: Polaris components
+<s-page heading="Project Details">
+  <s-section heading="Details">
+    <s-stack gap="base">
+      <s-text-field
+        label="Name"
+        name="name"
+        value={formState.name}
+        onInput={handleInput}
+      />
+      <s-button variant="primary" slot="primary-action">
+        Save
+      </s-button>
+    </s-stack>
+  </s-section>
+</s-page>
+```
+
+## Session Management
+Handle Shopify sessions properly:
+
+```typescript
+// ✅ Good: Session handling
+const { session } = await authenticate.admin(request);
+const { shop } = session;
+
+// Use shop for multi-tenant queries
+const projects = await db.project.findMany({
+  where: { shop }
+});
+```
+
+## GraphQL API Usage
+When using Shopify's GraphQL API:
+
+```typescript
+// ✅ Good: GraphQL usage
+const response = await admin.graphql(`
+  query getProducts($first: Int!) {
+    products(first: $first) {
+      edges {
+        node {
+          id
+          title
+        }
+      }
+    }
+  }
+`, {
+  variables: { first: 10 }
+});
+```
+
+## Error Handling for Shopify
+Handle Shopify-specific errors appropriately:
+
+```typescript
+// ✅ Good: Shopify error handling
+try {
+  const result = await admin.graphql(query);
+  return result;
+} catch (error) {
+  if (error instanceof GraphqlQueryError) {
+    // Handle GraphQL errors
+  } else {
+    // Handle other errors
+  }
+}
+```
+
+## Multi-Tenancy Patterns
+Always consider multi-tenancy in data operations:
+
+```typescript
+// ✅ Good: Multi-tenant data access
+const project = await db.project.findFirst({
+  where: { 
+    id: projectId,
+    shop: session.shop  // Always filter by shop
+  }
+});
+```

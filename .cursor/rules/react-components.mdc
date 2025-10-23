@@ -1,0 +1,148 @@
+---
+globs: app/routes/**/components/**/*.tsx
+description: React component patterns and conventions
+---
+
+# React Component Patterns
+
+## Component Organization
+Components should be organized in route-specific `components/` directories with barrel exports:
+
+```typescript
+// ✅ Good: Component structure
+// app/routes/app._index/components/EmptyState.tsx
+export function EmptyState() {
+  const navigate = useNavigate();
+  
+  return (
+    <s-grid gap="base" justifyItems="center" paddingBlock="large-400">
+      {/* Component JSX */}
+    </s-grid>
+  );
+}
+
+// app/routes/app._index/components/index.ts
+export * from "./EmptyState";
+export * from "./ProjectsTable";
+```
+
+## Shopify Polaris Integration
+Use Shopify's custom web components for consistent UI:
+
+```typescript
+// ✅ Good: Polaris components
+<s-page heading={`${$APP.APP_NAME} Application`}>
+  <s-button variant="primary" slot="primary-action">
+    Create Project
+  </s-button>
+  
+  <s-section>
+    <s-stack gap="base">
+      {/* Content */}
+    </s-stack>
+  </s-section>
+</s-page>
+```
+
+## Props and TypeScript
+Define clear interfaces for component props:
+
+```typescript
+// ✅ Good: Props interface
+type ProjectsTableProp = {
+    projects: {
+        id: number;
+        name: string;
+        status: ProjectStatus;
+        createdAt: Date;
+    }[]
+}
+
+export const ProjectsTable = ({ projects }: ProjectsTableProp) => (
+    <s-table>
+        {/* Table implementation */}
+    </s-table>
+);
+```
+
+## State Management Patterns
+Use appropriate React hooks for state management:
+
+```typescript
+// ✅ Good: State management
+export default function ProjectForm() {
+    const [formState, setFormState] = useState(project);
+    const [rawCsv, setRawCsv] = useState<string>("");
+    const isSaving = useNavigation().state === "submitting";
+    
+    // State update functions
+    function handleCsvDataChange(data: string[][], raw: string) {
+        setRawCsv(raw);
+    }
+}
+```
+
+## Event Handling
+Implement proper event handlers with TypeScript:
+
+```typescript
+// ✅ Good: Event handlers
+function handleSave(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData();
+    Object.entries(formState).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+            formData.set(key, String(value));
+        }
+    });
+    submit(formData, { method: "post" });
+}
+```
+
+## Form Patterns
+Implement proper form handling with validation:
+
+```typescript
+// ✅ Good: Form implementation
+<form data-save-bar onSubmit={handleSave} onReset={handleReset}>
+    <s-text-field
+        label="Name"
+        error={errors.name}
+        name="name"
+        value={formState.name}
+        onInput={(e) => setFormState({ ...formState, name: e.currentTarget.value })}
+        required
+    />
+</form>
+```
+
+## Error Handling
+Display errors appropriately in components:
+
+```typescript
+// ✅ Good: Error display
+{error && (
+    <div style={{ 
+        backgroundColor: '#fef2f2', 
+        border: '1px solid #fecaca', 
+        borderRadius: '4px', 
+        padding: '12px',
+        marginBottom: '16px',
+        color: '#dc2626'
+    }}>
+        <strong>CSV Upload Error:</strong> {error}
+    </div>
+)}
+```
+
+## Performance Patterns
+- Use proper React keys for lists
+- Implement proper memoization when needed
+- Avoid unnecessary re-renders
+- Use proper dependency arrays in useEffect
+
+## Accessibility
+- Use proper ARIA attributes
+- Implement keyboard navigation
+- Provide meaningful labels
+- Ensure proper focus management

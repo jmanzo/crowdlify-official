@@ -1,0 +1,112 @@
+---
+alwaysApply: true
+description: Core architecture patterns and conventions for the Shopify Crowdlify app
+---
+
+# Shopify App Architecture Guide
+
+## Core Framework & Structure
+This is a **Shopify app built with Remix** using React Router v7, TypeScript, and Prisma ORM.
+
+### Key Technologies
+- **Framework**: Remix with React Router v7 (file-based routing)
+- **Database**: PostgreSQL with Prisma ORM
+- **UI**: Shopify Polaris design system with custom web components (`s-*` elements)
+- **Authentication**: Shopify OAuth with session storage in database
+- **API**: Shopify Admin GraphQL API (version October25)
+
+### Directory Structure Patterns
+```
+app/
+├── routes/                 # Remix file-based routing
+│   ├── app.*.tsx          # Authenticated app pages
+│   ├── auth.*.tsx         # Authentication routes
+│   ├── webhooks.*.tsx     # Webhook handlers
+│   └── _index/            # Public landing page
+├── models/                 # Server-side data models
+├── helpers/                # Utility functions
+├── utils/                  # Shared utilities
+├── types/                  # TypeScript type definitions
+├── constants/              # App constants
+└── db.server.ts           # Prisma database client
+```
+
+## Route Organization Patterns
+
+### Server-Side Logic Separation
+- **Loaders**: Use `.server/loader/index.ts` for data fetching
+- **Actions**: Use `.server/action/index.ts` for form submissions
+- **Components**: Use `components/` directory with `index.ts` barrel exports
+
+### Route Naming Conventions
+- `app._index` - Main dashboard
+- `app.projects.$id` - Dynamic project routes
+- `auth.login` - Authentication pages
+- `webhooks.*` - Webhook handlers
+
+## Database Patterns
+
+### Prisma Schema Structure
+- **Enums**: Define status types (ProjectStatus, UploadStatus, etc.)
+- **Models**: Use proper relationships with cascade deletes
+- **Indexes**: Add performance indexes for foreign keys
+- **Constraints**: Use unique constraints for business logic
+
+### Database Access Patterns
+- Always use the singleton Prisma client from [db.server.ts](mdc:app/db.server.ts)
+- Server-side models in `models/` directory (e.g., [Project.server.ts](mdc:app/models/Project.server.ts))
+- Use transactions for complex operations
+
+## Authentication & Security
+
+### Shopify Authentication
+- All `/app/*` routes require authentication via `authenticate.admin(request)`
+- Sessions stored in PostgreSQL via PrismaSessionStorage
+- Use `session.shop` for multi-tenant data isolation
+
+### Error Handling
+- Use [handleApiError](mdc:app/utils/handleApiErrors.ts) for consistent error responses
+- Return structured error objects with field-specific validation
+- Always handle authentication errors gracefully
+
+## Component Patterns
+
+### Shopify Polaris Integration
+- Use custom web components (`s-page`, `s-section`, `s-button`, etc.)
+- Follow Polaris design system conventions
+- Implement proper accessibility attributes
+
+### Form Handling
+- Use React Router's `useSubmit` and `useActionData` hooks
+- Implement dirty state tracking with `useEffect`
+- Use Shopify's save bar for unsaved changes
+
+### State Management
+- Prefer local state with `useState` for component state
+- Use loader data for server state
+- Implement proper form validation with error handling
+
+## Data Validation Patterns
+
+### Type Safety
+- Use TypeScript predicates (e.g., [isProjectPayload](mdc:app/types/predicates/isProjectPayload.ts))
+- Avoid `any` assertions - use proper type guards instead
+- Define clear interfaces for API payloads
+
+### Validation Functions
+- Server-side validation in `helpers/` directory
+- Return structured error objects
+- Validate both data types and business rules
+
+## File Naming Conventions
+- **Components**: PascalCase (e.g., `EmptyState.tsx`)
+- **Routes**: kebab-case with dots (e.g., `app.projects.$id`)
+- **Server files**: `.server.ts` suffix
+- **Types**: Descriptive names with `.ts` extension
+- **Constants**: UPPER_SNAKE_CASE in constants files
+
+## Import Patterns
+- Use absolute imports with `app/` prefix
+- Group imports: external libraries, then internal modules
+- Use barrel exports (`index.ts`) for clean imports
+- Prefer named exports over default exports for utilities

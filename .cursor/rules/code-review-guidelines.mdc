@@ -1,0 +1,131 @@
+---
+globs: *.ts,*.tsx
+description: Code review guidelines focusing on optimizations, performance, readability and bug prevention
+---
+
+# Code Review Guidelines
+
+## Review Focus Areas
+When reviewing code, prioritize these areas in order:
+
+### 1. Performance Optimizations
+- **Database Queries**: Check for N+1 queries, missing indexes, unnecessary data fetching
+- **React Performance**: Verify proper key usage, avoid unnecessary re-renders, efficient state updates
+- **Memory Usage**: Look for memory leaks, proper cleanup, efficient data structures
+- **Bundle Size**: Ensure tree shaking, avoid unused imports, optimize dependencies
+
+### 2. Performance Anti-Patterns to Avoid
+```typescript
+// ❌ Bad: Fetching all fields when only some are needed
+const projects = await prisma.project.findMany({ where: { shop } });
+
+// ✅ Good: Select only needed fields
+const projects = await prisma.project.findMany({
+    where: { shop },
+    select: { id: true, name: true, status: true }
+});
+
+// ❌ Bad: Inefficient array operations
+const filtered = data.filter(item => item.active).map(item => item.name);
+
+// ✅ Good: Combined operations
+const filtered = data.reduce((acc, item) => {
+    if (item.active) acc.push(item.name);
+    return acc;
+}, []);
+```
+
+### 3. Readability Standards
+- **Function Names**: Use descriptive, action-oriented names
+- **Variable Names**: Use clear, self-documenting names
+- **Code Structure**: Keep functions small and focused
+- **Comments**: Add comments for complex business logic, not obvious code
+
+### 4. Bug Prevention Patterns
+```typescript
+// ❌ Bad: Type assertions without validation
+const data = response as ProjectData;
+
+// ✅ Good: Type guards and validation
+if (isProjectPayload(data)) {
+    // Safe to use data
+}
+
+// ❌ Bad: Unsafe property access
+const name = user.profile.name;
+
+// ✅ Good: Safe property access
+const name = user?.profile?.name ?? 'Unknown';
+
+// ❌ Bad: Missing error handling
+const result = await uploadFile(file);
+
+// ✅ Good: Proper error handling
+try {
+    const result = await uploadFile(file);
+    return { success: true, data: result };
+} catch (error) {
+    console.error('Upload failed:', error);
+    return { success: false, error: 'Upload failed' };
+}
+```
+
+### 5. TypeScript Best Practices
+- **Avoid `any`**: Never use `any` type, find proper alternatives
+- **Type Guards**: Use runtime type checking with predicates
+- **Interface Design**: Create clear, focused interfaces
+- **Generic Usage**: Use generics for reusable components
+
+### 6. Security Considerations
+- **Input Validation**: Verify all user inputs are validated
+- **SQL Injection**: Ensure proper parameterized queries
+- **Authentication**: Verify proper authentication checks
+- **Authorization**: Check proper permission validation
+
+### 7. Code Structure Review
+```typescript
+// ✅ Good: Clear separation of concerns
+export const upload = async (projectId: number, rawData: FormDataEntryValue) => {
+    try {
+        const csvData = parseCsvText(rawData);
+        const validatedData = validateChunk(csvData);
+        
+        if (!validatedData.isValid) {
+            return { success: false, error: "CSV validation failed" };
+        }
+        
+        const csvUpload = await db.csvUpload.create({
+            data: { projectId, status: UploadStatus.PENDING }
+        });
+        
+        return { success: true, uploadId: csvUpload.id };
+    } catch (error) {
+        console.error("Upload failed:", error);
+        return { success: false, error: "Internal error" };
+    }
+};
+```
+
+### 8. Testing Considerations
+- **Testability**: Ensure code is testable with proper dependency injection
+- **Edge Cases**: Consider boundary conditions and error states
+- **Mocking**: Design for easy mocking of external dependencies
+- **Coverage**: Aim for meaningful test coverage
+
+### 9. Documentation Standards
+- **API Documentation**: Document public APIs and complex functions
+- **README Updates**: Update documentation for new features
+- **Code Comments**: Add comments for complex business logic
+- **Type Documentation**: Use JSDoc for complex types
+
+### 10. Review Checklist
+- [ ] Performance optimizations implemented
+- [ ] No TypeScript `any` usage
+- [ ] Proper error handling
+- [ ] Input validation present
+- [ ] Authentication/authorization checks
+- [ ] Database queries optimized
+- [ ] React performance best practices
+- [ ] Code is readable and maintainable
+- [ ] Tests cover critical paths
+- [ ] Documentation updated if needed
