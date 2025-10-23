@@ -5,6 +5,7 @@ import db from 'app/db.server';
 import { handleApiError } from "app/utils/handleApiErrors";
 import { isProjectPayload } from "app/types/predicates/isProjectPayload";
 import { upload } from "app/models/CSVUpload.server";
+import { validateProjectData } from "app/helpers";
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
     const { session, redirect } = await authenticate.admin(request);
@@ -26,6 +27,12 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         };
 
         if (isProjectPayload(data)) {
+            const errors = await validateProjectData(data);
+
+            if (errors) {
+                return handleApiError({ status: 422, errors });
+            }
+
             const project = params.id === "new"
                 ? await db.project.create({ data })
                 : await db.project.update({

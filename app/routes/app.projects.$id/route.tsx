@@ -7,6 +7,8 @@ import { CSVUpload } from "./components";
 import { loader } from "./.server/loader";
 import { action } from "./.server/action";
 
+import type { ApiErrorBase } from "app/utils";
+
 export { loader, action };
 
 const statusOptions = Object.values(ProjectStatus).map(status => ({
@@ -22,7 +24,14 @@ export default function ProjectForm() {
     const [ initialFormState, setInitialFormState ] = useState(project);
     const [ formState, setFormState ] = useState(project);
     const [rawCsv, setRawCsv] = useState<string>("");
-    const errors = useActionData()?.errors || {};
+    const errorsData: ApiErrorBase[] = useActionData()?.errors || [];
+    const errors = errorsData.reduce((acc, crr) => {
+        if (crr.field) {
+            acc[crr.field] = crr.message;
+        }
+        return acc;
+    // TODO: Can this assertion be better implemented?
+    }, {} as Record<string, string>);
     const isSaving = useNavigation().state === "submitting";
     const isDirty = JSON.stringify(formState) !== JSON.stringify(initialFormState);
 
