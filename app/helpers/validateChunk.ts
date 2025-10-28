@@ -1,6 +1,5 @@
 import { Platform } from "@prisma/client";
 import { mapKeys } from "app/utils";
-import { detectPlatform } from "./";
 
 // Basic validation for CSV chunk
 export const validateChunk = (chunkData: string[][]): ReturnChunkData => {
@@ -36,10 +35,6 @@ export const validateChunk = (chunkData: string[][]): ReturnChunkData => {
             }]
         };
     }
-    
-    // Detect platform
-    const platform = detectPlatform(headers);
-    
     // Validate each row
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
@@ -56,8 +51,7 @@ export const validateChunk = (chunkData: string[][]): ReturnChunkData => {
     
     return {
       isValid: errors.length === 0,
-      errors,
-      platform
+      errors
     };
 }
 
