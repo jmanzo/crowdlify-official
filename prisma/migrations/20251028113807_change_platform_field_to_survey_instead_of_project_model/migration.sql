@@ -5,10 +5,12 @@
 
 */
 -- AlterEnum
-ALTER TYPE "Platform" ADD VALUE 'UNKNOWN';
+-- Split-safe: add enum value first; do not use it in same txn
+ALTER TYPE "Platform" ADD VALUE IF NOT EXISTS 'UNKNOWN';
 
 -- AlterTable
 ALTER TABLE "Project" DROP COLUMN "platform";
 
 -- AlterTable
-ALTER TABLE "Survey" ADD COLUMN "platform" "Platform" NOT NULL DEFAULT 'UNKNOWN';
+-- Add nullable without default; will be backfilled in a follow-up migration
+ALTER TABLE "Survey" ADD COLUMN "platform" "Platform";
