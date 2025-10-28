@@ -29,6 +29,7 @@ enum SurveyStatus {
 enum Platform {
   KICKSTARTER
   INDIEGOGO
+  UNKNOWN
 }
 
 enum UploadStatus {
@@ -77,7 +78,6 @@ model Project {
     popupStatus     Boolean         @default(false)
     popupTitle      String?
     popupContent    String?
-    platform        Platform        @default(KICKSTARTER)
 
     uploads         CsvUpload[]
     products        Product[]
@@ -134,6 +134,7 @@ model Survey {
   backerId     Int
   pledge       Pledge       @relation(fields: [pledgeId], references: [id])
   pledgeId     Int
+  platform     Platform     @default(UNKNOWN)
   bonusSupport Float        @default(0)
   price        Float
   country      String
