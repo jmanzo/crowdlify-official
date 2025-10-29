@@ -1,8 +1,10 @@
 import { Worker, Job } from "bullmq";
 import { connection } from "../services/queue.server";
+import { processChunk } from "../services/csvProcessor.server";
+import { checkUploadCompletion } from "../models/CSVUpload.server";
 
 // Job data interface
-interface CsvProcessingJobData {
+type CsvProcessingJobData = {
   chunkId: number;
   uploadId: number;
   projectId: number;
@@ -15,18 +17,36 @@ const worker = new Worker<CsvProcessingJobData>(
     console.log(`Processing job ${job.id} for chunk ${job.data.chunkId}`);
 
     try {
-      // 1. Fetch chunk from database
-      // 2. Update status to PROCESSING
-      // 3. Process CSV data
-      // 4. Validate with Zod
-      // 5. Insert into database
-      // 6. Update status to COMPLETED
+      // Process the chunk using the CSV processor service
+      const result = await processChunk(job.data.chunkId);
       
-      console.log(`Job ${job.id} processed successfully`);
+      console.log(
+        `Job ${job.id} completed: ${result.processedRows} rows processed` +
+        (result.validationErrors.length > 0 
+          ? `, ${result.validationErrors.length} validation errors`
+          : ""
+        )
+      );
+      // Check if all chunks for this upload are completed
+      const uploadCompletion = await checkUploadCompletion(job.data.uploadId);
       
-      return { success: true, chunkId: job.data.chunkId };
+      if (uploadCompletion.completed) {
+        console.log(
+          `Upload ${job.data.uploadId} completed with status: ${uploadCompletion.status}`,
+          `(${uploadCompletion.successfulChunks} successful, ${uploadCompletion.failedChunks} failed)`
+        );
+      }
+      
+      return result;
     } catch (error) {
       console.error(`Job ${job.id} failed:`, error);
+      // Even if processing failed, check upload completion status
+      try {
+        await checkUploadCompletion(job.data.uploadId);
+      } catch (completionError) {
+        console.error(`Failed to check upload completion:`, completionError);
+      }
+      
       throw error; // Let BullMQ handle retries
     }
   },
