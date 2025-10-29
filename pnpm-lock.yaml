@@ -56,6 +56,9 @@ importers:
       react-router:
         specifier: ^7.9.3
         version: 7.9.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      sqids:
+        specifier: ^0.3.0
+        version: 0.3.0
       tiny-invariant:
         specifier: ^1.3.3
         version: 1.3.3
@@ -3439,6 +3442,9 @@ packages:
 
   sponge-case@1.0.1:
     resolution: {integrity: sha512-dblb9Et4DAtiZ5YSUZHLl4XhH4uK80GhAZrVXdN4O2P4gQ40Wa5UIOPUHlA/nFd2PLblBZWUioLMMAVrgpoYcA==}
+
+  sqids@0.3.0:
+    resolution: {integrity: sha512-lOQK1ucVg+W6n3FhRwwSeUijxe93b51Bfz5PMRMihVf1iVkl82ePQG7V5vwrhzB11v0NtsR25PSZRGiSomJaJw==}
 
   stable-hash@0.0.5:
     resolution: {integrity: sha512-+L3ccpzibovGXFK+Ap/f8LOS0ahMrHTf3xu7mMLSpEGU0EO9ucaysSylKo9eRDFNhWve/y275iPmIZ4z39a9iA==}
@@ -7705,6 +7711,8 @@ snapshots:
   sponge-case@1.0.1:
     dependencies:
       tslib: 2.6.3
+
+  sqids@0.3.0: {}
 
   stable-hash@0.0.5: {}
 
